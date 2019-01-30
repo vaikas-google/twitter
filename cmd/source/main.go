@@ -63,7 +63,7 @@ func main() {
 	logger.Info("querying for ", zap.String("query", query))
 
 	ceClient := cloudevents.NewClient(sink, cloudevents.Builder{
-		EventType: "con.twitter",
+		EventType: "com.twitter",
 		Source:    "com.twitter",
 	})
 
