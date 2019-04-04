@@ -1,4 +1,3 @@
----
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: ContainerSource
 metadata:
@@ -28,8 +27,10 @@ spec:
       secretKeyRef:
         key: access-secret
         name: twitter-secret
-  image: us.gcr.io/probable-summer-223122/source-7dd4982354a958712ad81ca4a42243dd@sha256:cde5fe346eb17e3f2b9771cbe2a72954b216585402113b105b7c5d32ad812576
+  image: us.gcr.io/probable-summer-223122/source-7dd4982354a958712ad81ca4a42243dd@sha256:9bfa60a5d6edaedd5431d751595b54b1282a3f4e7b512a6bb6784e8be4699a5c
   sink:
-    apiVersion: serving.knative.dev/v1alpha1
-    kind: Service
-    name: twitter-dumper
+    apiVersion: eventing.knative.dev/v1alpha1
+    kind: Broker
+    name: default
+
+---

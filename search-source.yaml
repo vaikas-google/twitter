@@ -7,9 +7,9 @@ metadata:
 spec:
   image: github.com/vaikas-google/twitter/cmd/source
   sink:
-    apiVersion: serving.knative.dev/v1alpha1
-    kind: Service
-    name: twitter-dumper
+    apiVersion: eventing.knative.dev/v1alpha1
+    kind: Broker
+    name: default
   args:
     - --query=QUERY
   env:
