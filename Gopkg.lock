@@ -10,6 +10,26 @@
   version = "v2.1.1"
 
 [[projects]]
+  digest = "1:f616892b62757b2dcd70957602981d4f05c4d75017138cea02b3845d07c18785"
+  name = "github.com/cloudevents/sdk-go"
+  packages = [
+    "pkg/cloudevents",
+    "pkg/cloudevents/client",
+    "pkg/cloudevents/codec",
+    "pkg/cloudevents/context",
+    "pkg/cloudevents/datacodec",
+    "pkg/cloudevents/datacodec/json",
+    "pkg/cloudevents/datacodec/xml",
+    "pkg/cloudevents/observability",
+    "pkg/cloudevents/transport",
+    "pkg/cloudevents/transport/http",
+    "pkg/cloudevents/types",
+  ]
+  pruneopts = "UT"
+  revision = "e00e75c8a1befe895cc00def1f88adb611195159"
+  version = "0.4.4"
+
+[[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
@@ -19,11 +39,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dbafc2ff5b1aaf1a66cda9fe7801c0c87535e513700ef62de968d22a99defa12"
+  digest = "1:b051e524e209fba795cb073d79b2c418690fefb41a30ab9727882329744da24c"
   name = "github.com/dghubble/go-twitter"
   packages = ["twitter"]
   pruneopts = "UT"
-  revision = "7fd79e2bcc65f2e35ee1ada816481ab3e0c64d2a"
+  revision = "0022a70e9bee80163be82fdd74ac1d92bdebaf57"
 
 [[projects]]
   digest = "1:f3cacf5fd0e718de3f43af615e84372b318f61889140f6854f98b05894001d99"
@@ -50,12 +70,20 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:236d7e1bdb50d8f68559af37dbcf9d142d56b431c9b2176d41e2a009b664cda8"
+  digest = "1:582b704bebaa06b48c29b0cec224a6058a09c86883aaddabde889cd1a5f73e1b"
   name = "github.com/google/uuid"
   packages = ["."]
   pruneopts = "UT"
-  revision = "9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8"
-  version = "v1.1.0"
+  revision = "0cd6bf5da1e1c83f8b45653022c74f71af0538a4"
+  version = "v1.1.1"
+
+[[projects]]
+  digest = "1:67474f760e9ac3799f740db2c489e6423a4cde45520673ec123ac831ad849cb8"
+  name = "github.com/hashicorp/golang-lru"
+  packages = ["simplelru"]
+  pruneopts = "UT"
+  revision = "7087cb70de9f7a8bc0a10c375cb0d2280a8edf9c"
+  version = "v0.5.1"
 
 [[projects]]
   digest = "1:edbef42561faa44c19129b68d1e109fbc1647f63239250391eadc8d0e7c9f669"
@@ -67,14 +95,36 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5eefabe169bf61de242dbe85d0278e93862c4914fe6d3d534b97c137353fc143"
+  digest = "1:eaa612c0d8ebb83e29449cce2a044323f7ddb507154967191ea0a89963c82a07"
   name = "github.com/knative/pkg"
   packages = [
     "cloudevents",
     "signals",
   ]
   pruneopts = "UT"
-  revision = "b531944062b4f40f4192ddbf155ac9eed34b30ae"
+  revision = "ff46edef0ae5fa1a1f12dbe1d3b8095d2d23501f"
+
+[[projects]]
+  digest = "1:80885382c3c034fdf2e3d1052dda22bc3734363b98a46e2150926f36df9f1038"
+  name = "go.opencensus.io"
+  packages = [
+    ".",
+    "internal",
+    "internal/tagencoding",
+    "metric/metricdata",
+    "metric/metricproducer",
+    "resource",
+    "stats",
+    "stats/internal",
+    "stats/view",
+    "tag",
+    "trace",
+    "trace/internal",
+    "trace/tracestate",
+  ]
+  pruneopts = "UT"
+  revision = "46618d076d80f4eab85adbcb3be9a370be1dc4e0"
+  version = "v0.20.0"
 
 [[projects]]
   digest = "1:3c1a69cdae3501bf75e76d0d86dc6f2b0a7421bc205c0cb7b96b19eed464a34d"
@@ -111,6 +161,8 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/cloudevents/sdk-go/pkg/cloudevents",
+    "github.com/cloudevents/sdk-go/pkg/cloudevents/client",
     "github.com/dghubble/go-twitter/twitter",
     "github.com/dghubble/oauth1",
     "github.com/kelseyhightower/envconfig",

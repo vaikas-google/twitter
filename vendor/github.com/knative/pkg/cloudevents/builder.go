@@ -62,7 +62,7 @@ func (b *Builder) Build(target string, data interface{}, overrides ...SendContex
 		return nil, fmt.Errorf("Build was called with more than one override")
 	}
 
-	var overridesV01 *V01EventContext = nil
+	var overridesV01 *V01EventContext
 	if len(overrides) == 1 {
 		switch t := overrides[0].(type) {
 		case V01EventContext:
@@ -78,7 +78,7 @@ func (b *Builder) Build(target string, data interface{}, overrides ...SendContex
 	if ctx.Source == "" {
 		return nil, fmt.Errorf("ctx.Source resolved empty")
 	}
-	if b.EventType == "" {
+	if ctx.EventType == "" {
 		return nil, fmt.Errorf("ctx.EventType resolved empty")
 	}
 
