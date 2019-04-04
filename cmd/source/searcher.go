@@ -48,16 +48,22 @@ func (s *searcher) search() {
 	})
 
 	if err != nil {
-		fmt.Printf("Error executing search %s - %v", resp.Status, err)
+		fmt.Printf("Error executing search %v\n", err)
+		if resp != nil {
+			fmt.Printf("Response Status: %s", resp.Status)
+		}
 	}
+	successes := 0
 	for _, t := range search.Statuses {
 		handlerErr := s.handler(&t)
 		if handlerErr != nil {
-			fmt.Printf("Failed to post: %s", err)
+			fmt.Printf("Failed to post: %s\n", err)
 			break
 		}
+		successes = successes + 1
 		if t.ID > s.sinceID {
 			s.sinceID = t.ID
 		}
 	}
+	fmt.Printf("Sent %d new tweets\n", successes)
 }
