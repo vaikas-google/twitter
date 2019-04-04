@@ -1,0 +1,16 @@
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: slacker-dumper
+  namespace: twitter
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        spec:
+          container:
+            image: github.com/vaikas-google/twitter/cmd/slacker
+            env:
+              - name: SLACKER_TARGET
+                value: SLACK_POST_URL
