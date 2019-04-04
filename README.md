@@ -34,6 +34,7 @@ matching your query term that we'll set up below.
 
 ```shell
 kubectl --namespace default apply -f https://raw.githubusercontent.com/vaikas-google/twitter/master/config/service.yaml
+kubectl --namespace default apply -f https://raw.githubusercontent.com/vaikas-google/twitter/master/config/trigger.yaml
 ```
 
 ## Create a secret with your Twitter secrets
@@ -94,3 +95,50 @@ and you should see tweets that match your query string. When I look for knative,
 2019/01/11 23:03:10 Received Cloud Event Context as: {CloudEventsVersion:0.1 EventID:1083393535674601472 EventTime:2019-01-10 16:02:02 +0000 UTC EventType:com.twitter EventTypeVersion: SchemaURL: ContentType:application/json Source:com.twitter Extensions:map[]}
 2019/01/11 23:03:10 Got tweet from "David Metcalfe" text: "RT @RedHatPartners: #RedHat collaborates with @Google, @SAP, @IBM and others on @KnativeProject to deliver hybrid #serverless workloads to…"
 ```
+
+## Creating another trigger that sends events to Slack Channel.
+
+This is just a simple extension, showing couple of things:
+
+1. Once event source is configured to send events to broker, wiring them to additional
+functions is simple.
+1. If you want to watch for different kinds of query terms, you will need to create a new
+source as things work currently. 
+1. showing fanout that is achieved by using the Broker as Event Delivery System, which
+manages channels underneath.
+
+For this you need valid Slack credentials, you can obtain them from here:
+https://api.slack.com/tutorials/slack-apps-hello-world
+
+Basically grab the Webhook URL from there, that's where our function is going to post
+the tweets that it is seeing. The URL should look like:
+https://hooks.slack.com/services/<RANDO STUFF HERE>
+
+
+## Create a secret with your Slack secrets
+
+Modify (or create a file like this) ./slack-secret.yaml and replace `SLACK_POST_URL` with the Webhook URL
+from above.
+
+```shell
+apiVersion: v1
+kind: Secret
+metadata:
+  name: slack-secret
+type: Opaque
+stringData:
+  slack-post-url: SLACK_POST_URL
+```
+
+And then create the secret like so:
+```shell
+kubectl create -f ./slack-secret.yaml
+```
+
+
+```shell
+kubectl --namespace default apply -f https://raw.githubusercontent.com/vaikas-google/twitter/master/config/slacker.yaml
+kubectl --namespace default apply -f https://raw.githubusercontent.com/vaikas-google/twitter/master/config/trigger-slack.yaml
+```
+
+And when a new twitter matching your query will be sent to your Slack channel.

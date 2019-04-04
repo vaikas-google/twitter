@@ -1,16 +1,19 @@
----
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
   name: slacker-dumper
-  namespace: twitter
 spec:
   runLatest:
     configuration:
       revisionTemplate:
         spec:
           container:
-            image: github.com/vaikas-google/twitter/cmd/slacker
             env:
-              - name: SLACKER_TARGET
-                value: SLACK_POST_URL
+            - name: SLACKER_TARGET
+              valueFrom:
+                secretKeyRef:
+                  key: slack-post-url
+                  name: slack-secret
+            image: us.gcr.io/probable-summer-223122/slacker-ecd5a67965cf0207b509a5c77d58f3a8@sha256:fc3afc1a764e0720e48cecd21c7e3045a0a409d94bb798c2f6a2c12f8f77f508
+
+---
