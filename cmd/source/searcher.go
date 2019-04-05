@@ -83,30 +83,17 @@ func (s *searcher) streamer() {
 		Track:         []string{s.query},
 		StallWarnings: twitter.Bool(true),
 	}
+	demux := twitter.NewSwitchDemux()
+	demux.Tweet = func(t *twitter.Tweet) {
+		if handleErr := s.handler(t); handleErr != nil {
+			fmt.Printf("Failed to post: %s\n", handleErr)
+		}
+	}
+
 	stream, err := s.client.Streams.Filter(params)
 	if err != nil {
 		fmt.Printf("Failed to create filter: %s", err)
 		return
 	}
-
-	go func() {
-		for {
-			select {
-			case msg := <-stream.Messages:
-				tweet, ok := msg.(*twitter.Tweet)
-				if !ok {
-					fmt.Printf("Got invalid event type: %+v\n", tweet)
-				} else {
-					fmt.Printf("Handling: %s : %s\n", tweet.User.Name, tweet.Text)
-					handlerErr := s.handler(tweet)
-					if handlerErr != nil {
-						fmt.Printf("Failed to post: %s\n", err)
-					}
-				}
-			case <-s.stop:
-				fmt.Println("Exiting")
-				return
-			}
-		}
-	}()
+	demux.HandleChan(stream.Messages)
 }
