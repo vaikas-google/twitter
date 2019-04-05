@@ -12,32 +12,40 @@ type searcher struct {
 	query     string
 	frequency int64 // in seconds
 	handler   func(*twitter.Tweet) error
-	stop      chan bool
+	stop      <-chan struct{}
 	sinceID   int64 // keep track of what tweets we've seen so far
+	stream    bool  // use streaming
 }
 
-func NewSearcher(client *twitter.Client, query string, frequency int64, handler func(*twitter.Tweet) error, stop chan bool) *searcher {
-	return &searcher{client: client, query: query, frequency: frequency, handler: handler, stop: stop}
+func NewSearcher(client *twitter.Client, query string, frequency int64, handler func(*twitter.Tweet) error, stop <-chan struct{}, stream bool) *searcher {
+	return &searcher{client: client, query: query, frequency: frequency, handler: handler, stop: stop, stream: stream}
 }
 
 func (s *searcher) run() {
-	//	tickChan := time.NewTicker(s.frequency * time.Second).C
-	tickChan := time.NewTicker(10 * time.Second).C
+	if s.stream {
+		s.streamer()
+	} else {
+		s.restful()
+	}
+}
+
+// restful method uses the restful API, aka polls.
+func (s searcher) restful() {
+	tickChan := time.NewTicker(5 * time.Second).C
 	go func() {
 		for {
 			select {
 			case <-tickChan:
 				s.search()
-				fmt.Println("Fetching tweets")
 			case <-s.stop:
 				fmt.Println("Exiting")
-				return
 			}
 		}
 
 	}()
 }
 
+// search uses REST api and polls it...
 func (s *searcher) search() {
 	search, resp, err := s.client.Search.Tweets(&twitter.SearchTweetParams{
 		Query:           s.query,
@@ -52,7 +60,9 @@ func (s *searcher) search() {
 		if resp != nil {
 			fmt.Printf("Response Status: %s", resp.Status)
 		}
+		return
 	}
+	fmt.Printf("Got %d new tweets\n", len(search.Statuses))
 	successes := 0
 	for _, t := range search.Statuses {
 		handlerErr := s.handler(&t)
@@ -66,4 +76,37 @@ func (s *searcher) search() {
 		}
 	}
 	fmt.Printf("Sent %d new tweets\n", successes)
+}
+
+func (s *searcher) streamer() {
+	params := &twitter.StreamFilterParams{
+		Track:         []string{s.query},
+		StallWarnings: twitter.Bool(true),
+	}
+	stream, err := s.client.Streams.Filter(params)
+	if err != nil {
+		fmt.Printf("Failed to create filter: %s", err)
+		return
+	}
+
+	go func() {
+		for {
+			select {
+			case msg := <-stream.Messages:
+				tweet, ok := msg.(*twitter.Tweet)
+				if !ok {
+					fmt.Printf("Got invalid event type: %+v\n", tweet)
+				} else {
+					fmt.Printf("Handling: %s : %s\n", tweet.User.Name, tweet.Text)
+					handlerErr := s.handler(tweet)
+					if handlerErr != nil {
+						fmt.Printf("Failed to post: %s\n", err)
+					}
+				}
+			case <-s.stop:
+				fmt.Println("Exiting")
+				return
+			}
+		}
+	}()
 }

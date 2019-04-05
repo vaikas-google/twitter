@@ -18,8 +18,9 @@ import (
 )
 
 var (
-	sink  string
-	query string
+	sink   string
+	query  string
+	stream bool
 )
 
 type EnvConfig struct {
@@ -32,6 +33,7 @@ type EnvConfig struct {
 func init() {
 	flag.StringVar(&sink, "sink", "", "where to sink events to")
 	flag.StringVar(&query, "query", "", "query string to look for")
+	flag.BoolVar(&stream, "stream", true, "Use the streaming API instead of REST")
 }
 
 func main() {
@@ -61,6 +63,7 @@ func main() {
 	logger.Info("Conf: ", zap.String("consumerKey", s.ConsumerKey), zap.String("consumerSecretKey", s.ConsumerSecretKey), zap.String("accessToken", s.AccessToken), zap.String("accessSecret", s.AccessSecret))
 	logger.Info("Starting and publishing to sink", zap.String("sink", sink))
 	logger.Info("querying for ", zap.String("query", query))
+	logger.Info("streaming on ", zap.Bool("stream", stream))
 
 	ceClient := cloudevents.NewClient(sink, cloudevents.Builder{
 		EventType: "com.twitter",
@@ -76,12 +79,9 @@ func main() {
 	// Twitter client
 	client := twitter.NewClient(httpClient)
 
-	done := make(chan bool)
-
-	searcher := NewSearcher(client, query, 5, publisher.postMessage, done)
+	searcher := NewSearcher(client, query, 5, publisher.postMessage, stopCh, stream)
 	searcher.run()
 	<-stopCh
-	done <- true
 }
 
 type publisher struct {
