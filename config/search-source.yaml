@@ -2,10 +2,10 @@ apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: ContainerSource
 metadata:
   name: twitter-test
-  namespace: default
 spec:
   args:
   - --query=QUERY
+  - --stream=true
   env:
   - name: TWITTER_CONSUMER_KEY
     valueFrom:
@@ -27,7 +27,7 @@ spec:
       secretKeyRef:
         key: access-secret
         name: twitter-secret
-  image: us.gcr.io/probable-summer-223122/source-7dd4982354a958712ad81ca4a42243dd@sha256:3b7b2019b79b14ca9597c383c2061f91cdcacb1a14f0f8b1c670e3780c094206
+  image: us.gcr.io/probable-summer-223122/source-7dd4982354a958712ad81ca4a42243dd@sha256:3a9f8efa852c379b02fa635dcb099360de91ffce9a8055523b42f8f32ece8736
   sink:
     apiVersion: eventing.knative.dev/v1alpha1
     kind: Broker

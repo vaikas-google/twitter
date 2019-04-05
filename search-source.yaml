@@ -3,7 +3,6 @@ apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: ContainerSource
 metadata:
   name: twitter-test
-  namespace: default
 spec:
   image: github.com/vaikas-google/twitter/cmd/source
   sink:
@@ -12,6 +11,7 @@ spec:
     name: default
   args:
     - --query=QUERY
+    - --stream=true
   env:
     - name: TWITTER_CONSUMER_KEY
       valueFrom:
