@@ -27,7 +27,7 @@ spec:
       secretKeyRef:
         key: access-secret
         name: twitter-secret
-  image: us.gcr.io/probable-summer-223122/source-7dd4982354a958712ad81ca4a42243dd@sha256:9bfa60a5d6edaedd5431d751595b54b1282a3f4e7b512a6bb6784e8be4699a5c
+  image: us.gcr.io/probable-summer-223122/source-7dd4982354a958712ad81ca4a42243dd@sha256:3b7b2019b79b14ca9597c383c2061f91cdcacb1a14f0f8b1c670e3780c094206
   sink:
     apiVersion: eventing.knative.dev/v1alpha1
     kind: Broker
