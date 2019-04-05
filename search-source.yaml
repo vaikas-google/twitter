@@ -3,6 +3,8 @@ apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: ContainerSource
 metadata:
   name: twitter-test
+  annotations:
+    traffic.sidecar.istio.io/includeOutboundIPRanges: "INCLUDE_OUTBOUND_IPRANGES"
 spec:
   image: github.com/vaikas-google/twitter/cmd/source
   sink:

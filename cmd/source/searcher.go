@@ -85,6 +85,7 @@ func (s *searcher) streamer() {
 	}
 	demux := twitter.NewSwitchDemux()
 	demux.Tweet = func(t *twitter.Tweet) {
+		fmt.Printf("Got tweet from %s", t.User.Name)
 		if handleErr := s.handler(t); handleErr != nil {
 			fmt.Printf("Failed to post: %s\n", handleErr)
 		}
@@ -95,5 +96,5 @@ func (s *searcher) streamer() {
 		fmt.Printf("Failed to create filter: %s", err)
 		return
 	}
-	demux.HandleChan(stream.Messages)
+	go demux.HandleChan(stream.Messages)
 }
