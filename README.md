@@ -7,7 +7,9 @@ into [Knative Eventing](http://github.com/knative/eventing).
 
 ## Details
 
-This uses containersource
+This uses containersource. Until Istio 1.1 you'll need to annotate the
+twitter source with the `traffic.sidecar.istio.io/includeOutboundIPRanges`
+annotation to ensure the source can emit events into the mesh.
 
 ## Prerequisites
 
@@ -21,7 +23,12 @@ This uses containersource
 
 1. Setup [Knative Serving](https://github.com/knative/docs/blob/master/install)
 
-1. Configure [outbound network access](https://github.com/knative/docs/blob/master/serving/outbound-network-access.md)
+1. Configure [outbound network access](https://github.com/knative/docs/blob/master/docs/serving/outbound-network-access.md)
+  **note** you will need to determine the IP range of your cluster. So determine the IP range of your cluster. For example
+  if your IP ranges are: `10.16.0.0/14,10.19.240.0/20` export them like so.
+```shell
+export INCLUDE_OUTBOUND_IPRANGES="10.16.0.0/14,10.19.240.0/20"
+```
 
 1. Setup [Knative Eventing](https://github.com/knative/docs/tree/master/eventing)
    using the `release.yaml` file. This example does not require GCP.
@@ -67,7 +74,9 @@ of tweets. For example, if you wanted to look for `knative`, you'd do:
 
 ```shell
 curl https://raw.githubusercontent.com/vaikas-google/twitter/master/config/search-source.yaml | \
-sed "s/QUERY/knative/g" | kubectl apply -f -
+sed "s/QUERY/knative/g" | \
+sed "s@INCLUDE_OUTBOUND_IPRANGES@$INCLUDE_OUTBOUND_IPRANGES@g" | \
+kubectl apply -f -
 ```
 
 if you want to search for something else, replace knative with the query string you want

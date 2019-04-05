@@ -60,7 +60,6 @@ func main() {
 		return
 	}
 
-	logger.Info("Conf: ", zap.String("consumerKey", s.ConsumerKey), zap.String("consumerSecretKey", s.ConsumerSecretKey), zap.String("accessToken", s.AccessToken), zap.String("accessSecret", s.AccessSecret))
 	logger.Info("Starting and publishing to sink", zap.String("sink", sink))
 	logger.Info("querying for ", zap.String("query", query))
 	logger.Info("streaming on ", zap.Bool("stream", stream))

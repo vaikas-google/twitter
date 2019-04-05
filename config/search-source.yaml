@@ -1,6 +1,8 @@
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: ContainerSource
 metadata:
+  annotations:
+    traffic.sidecar.istio.io/includeOutboundIPRanges: "INCLUDE_OUTBOUND_IPRANGES"
   name: twitter-test
 spec:
   args:
@@ -27,7 +29,7 @@ spec:
       secretKeyRef:
         key: access-secret
         name: twitter-secret
-  image: us.gcr.io/probable-summer-223122/source-7dd4982354a958712ad81ca4a42243dd@sha256:3a9f8efa852c379b02fa635dcb099360de91ffce9a8055523b42f8f32ece8736
+  image: us.gcr.io/probable-summer-223122/source-7dd4982354a958712ad81ca4a42243dd@sha256:d783e702e953b5122c47d25ce05576d51cf8d76d40e33c3544c06079cf8dac96
   sink:
     apiVersion: eventing.knative.dev/v1alpha1
     kind: Broker
