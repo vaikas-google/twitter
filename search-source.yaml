@@ -1,5 +1,5 @@
 ---
-apiVersion: sources.eventing.knative.dev/v1beta1
+apiVersion: sources.knative.dev/v1beta1
 kind: ContainerSource
 metadata:
   name: twitter-test
