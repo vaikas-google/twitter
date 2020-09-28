@@ -75,10 +75,6 @@ func main() {
 		logger.Error("Failed to initialize CloudEvents client: %s", zap.Error(err))
 		return
 	}
-	/*NewClient(sink, cloudevents.Builder{
-		EventType: "com.twitter",
-		Source:    "com.twitter",
-	})*/
 
 	publisher := publisher{ceClient: ceClient, logger: logger, target: s.Sink}
 
@@ -128,8 +124,4 @@ func (p *publisher) postMessage(tweet *twitter.Tweet) error {
 		return result
 	}
 	return nil
-	/*tweet, cloudevents.V01EventContext{
-		EventID:   strconv.FormatInt(tweet.ID, 10),
-		EventTime: eventTime,
-	})*/
 }
