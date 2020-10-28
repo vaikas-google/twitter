@@ -5,10 +5,12 @@ import (
 	"time"
 
 	"github.com/dghubble/go-twitter/twitter"
+	"go.uber.org/zap"
 )
 
 type searcher struct {
 	client    *twitter.Client
+	logger    *zap.Logger
 	query     string
 	frequency int64 // in seconds
 	handler   func(*twitter.Tweet) error
@@ -17,8 +19,8 @@ type searcher struct {
 	stream    bool  // use streaming
 }
 
-func NewSearcher(client *twitter.Client, query string, frequency int64, handler func(*twitter.Tweet) error, stop <-chan struct{}, stream bool) *searcher {
-	return &searcher{client: client, query: query, frequency: frequency, handler: handler, stop: stop, stream: stream}
+func NewSearcher(client *twitter.Client, logger *zap.Logger, query string, frequency int64, handler func(*twitter.Tweet) error, stop <-chan struct{}, stream bool) *searcher {
+	return &searcher{client: client, logger: logger, query: query, frequency: frequency, handler: handler, stop: stop, stream: stream}
 }
 
 func (s *searcher) run() {
@@ -31,7 +33,7 @@ func (s *searcher) run() {
 
 // restful method uses the restful API, aka polls.
 func (s searcher) restful() {
-	tickChan := time.NewTicker(5 * time.Second).C
+	tickChan := time.NewTicker(15 * time.Second).C
 	go func() {
 		for {
 			select {
@@ -50,7 +52,7 @@ func (s *searcher) search() {
 	search, resp, err := s.client.Search.Tweets(&twitter.SearchTweetParams{
 		Query:           s.query,
 		Lang:            "en",
-		Count:           100,
+		Count:           12,
 		SinceID:         s.sinceID,
 		IncludeEntities: twitter.Bool(true),
 	})
@@ -67,7 +69,7 @@ func (s *searcher) search() {
 	for _, t := range search.Statuses {
 		handlerErr := s.handler(&t)
 		if handlerErr != nil {
-			fmt.Printf("Failed to post: %s\n", err)
+			s.logger.Info("Failed to post:", zap.Error(err))
 			break
 		}
 		successes = successes + 1

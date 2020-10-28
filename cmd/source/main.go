@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"strconv"
@@ -13,25 +14,26 @@ import (
 	"github.com/dghubble/oauth1"
 	"github.com/kelseyhightower/envconfig"
 
-	"github.com/knative/pkg/cloudevents"
-	"github.com/knative/pkg/signals"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+
+	"knative.dev/pkg/signals"
 )
 
 var (
-	sink   string
 	query  string
 	stream bool
 )
 
 type EnvConfig struct {
-	ConsumerKey       string `split_words:"true",required:"true"`
-	ConsumerSecretKey string `split_words:"true",required:"true"`
-	AccessToken       string `split_words:"true",required:"true"`
-	AccessSecret      string `split_words:"true",required:"true"`
+	ConsumerKey       string `split_words:"true" required:"true"`
+	ConsumerSecretKey string `split_words:"true" required:"true"`
+	AccessToken       string `split_words:"true" required:"true"`
+	AccessSecret      string `split_words:"true" required:"true"`
+
+	Sink string `envconfig:"K_SINK" required:"true"`
 }
 
 func init() {
-	flag.StringVar(&sink, "sink", "", "where to sink events to")
 	flag.StringVar(&query, "query", "", "query string to look for")
 	flag.BoolVar(&stream, "stream", true, "Use the streaming API instead of REST")
 }
@@ -59,17 +61,22 @@ func main() {
 		logger.Error("Need to specify query string")
 		return
 	}
+	if s.Sink == "" {
+		logger.Error("Need to specify sink")
+		return
+	}
 
-	logger.Info("Starting and publishing to sink", zap.String("sink", sink))
+	logger.Info("Starting and publishing to sink", zap.String("sink", s.Sink))
 	logger.Info("querying for ", zap.String("query", query))
 	logger.Info("streaming on ", zap.Bool("stream", stream))
 
-	ceClient := cloudevents.NewClient(sink, cloudevents.Builder{
-		EventType: "com.twitter",
-		Source:    "com.twitter",
-	})
+	ceClient, err := cloudevents.NewDefaultClient()
+	if err != nil {
+		logger.Error("Failed to initialize CloudEvents client: %s", zap.Error(err))
+		return
+	}
 
-	publisher := publisher{ceClient: ceClient, logger: logger}
+	publisher := publisher{ceClient: ceClient, logger: logger, target: s.Sink}
 
 	config := oauth1.NewConfig(s.ConsumerKey, s.ConsumerSecretKey)
 	token := oauth1.NewToken(s.AccessToken, s.AccessSecret)
@@ -78,14 +85,15 @@ func main() {
 	// Twitter client
 	client := twitter.NewClient(httpClient)
 
-	searcher := NewSearcher(client, query, 5, publisher.postMessage, stopCh, stream)
+	searcher := NewSearcher(client, logger, query, 5, publisher.postMessage, stopCh, stream)
 	searcher.run()
 	<-stopCh
 }
 
 type publisher struct {
+	ceClient cloudevents.Client
+	target   string
 	logger   *zap.Logger
-	ceClient *cloudevents.Client
 }
 
 type simpleTweet struct {
@@ -100,9 +108,20 @@ func (p *publisher) postMessage(tweet *twitter.Tweet) error {
 		p.logger.Info("Failed to parse created at: ", zap.Error(err))
 		eventTime = time.Now()
 	}
+	event := cloudevents.NewEvent()
+	event.SetSource("https://twitter.com/")
+	event.SetType("com.twitter.tweet")
+	event.SetData("application/json", tweet)
+	event.SetTime(eventTime)
+	event.SetID(strconv.FormatInt(tweet.ID, 10))
 
-	return p.ceClient.Send(tweet, cloudevents.V01EventContext{
-		EventID:   strconv.FormatInt(tweet.ID, 10),
-		EventTime: eventTime,
-	})
+	// TODO: plumb a shared context between tweet receipt and this send.
+	ctx := cloudevents.ContextWithTarget(context.Background(), p.target)
+
+	p.logger.Info("Attempting to send to", zap.String("target", p.target), zap.String("event", event.ID()))
+
+	if result := p.ceClient.Send(ctx, event); cloudevents.IsUndelivered(result) {
+		return result
+	}
+	return nil
 }

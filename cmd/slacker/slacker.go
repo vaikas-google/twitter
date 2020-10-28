@@ -26,8 +26,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
+	cloudevents "github.com/cloudevents/sdk-go/v2/"
+	"github.com/cloudevents/sdk-go/v2/client"
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/kelseyhightower/envconfig"
 )

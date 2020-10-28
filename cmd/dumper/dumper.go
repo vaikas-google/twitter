@@ -18,21 +18,18 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"net/http"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/dghubble/go-twitter/twitter"
-	"github.com/knative/pkg/cloudevents"
 )
 
-func myFunc(ctx context.Context, tweet *twitter.Tweet) error {
-	// Extract only the Cloud Context from the context because that's
-	// all we care about for this example and the entire context is toooooo much...
-	ec := cloudevents.FromContext(ctx)
-	if ec != nil {
-		log.Printf("Received Cloud Event Context as: %+v", *ec)
-	} else {
-		log.Printf("No Cloud Event Context found")
+func myFunc(event cloudevents.Event) error {
+	log.Printf("Received Cloud Event Context as: %+v", event.Context)
+	var tweet twitter.Tweet
+	if err := event.DataAs(&tweet); err != nil {
+		return fmt.Errorf("Unable to unpack tweet: %w", err)
 	}
 	log.Printf("Got tweet from %q text: %q", tweet.User.Name, tweet.Text)
 
@@ -40,10 +37,9 @@ func myFunc(ctx context.Context, tweet *twitter.Tweet) error {
 }
 
 func main() {
-	m := cloudevents.NewMux()
-	err := m.Handle("com.twitter", myFunc)
+	c, err := cloudevents.NewDefaultClient()
 	if err != nil {
-		log.Fatalf("Failed to create handler %s", err)
+		log.Fatalf("Unable to initialize client: %s", err)
 	}
-	http.ListenAndServe(":8080", m)
+	log.Fatal(c.StartReceiver(context.Background(), myFunc))
 }
